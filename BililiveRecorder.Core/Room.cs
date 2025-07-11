@@ -398,9 +398,12 @@ namespace BililiveRecorder.Core
         }
 
         ///
-        private void StartDamakuConnection(bool delay = true) =>
+        private void StartDamakuConnection(bool delay = true)
+        {
+            this.logger.Debug("开始弹幕连接 {disposed} {delay}", this.disposedValue, delay);
             _ = Task.Run(async () =>
             {
+                this.logger.Debug("开始弹幕连接任务 {disposed} {delay}", this.disposedValue, delay);
                 if (this.disposedValue)
                     return;
                 try
@@ -414,8 +417,15 @@ namespace BililiveRecorder.Core
                         catch (TaskCanceledException)
                         {
                             // 房间已被删除
+                            this.logger.Debug("房间已被删除，结束弹幕连接任务 {disposed} {delay}", this.disposedValue, delay);
                             return;
                         }
+                        catch (Exception ex)
+                        {
+                            this.logger.Write(ex is ExecutionRejectedException ? LogEventLevel.Verbose : LogEventLevel.Warning, ex, "等待连接弹幕服务器时出错");
+                            return;
+                        }
+                        this.logger.Debug("弹幕连接等待结束");
                     }
 
                     // 至少要等到获取到一次房间信息后才能连接弹幕服务器。
@@ -435,11 +445,13 @@ namespace BililiveRecorder.Core
                 catch (Exception ex)
                 {
                     this.logger.Write(ex is ExecutionRejectedException ? LogEventLevel.Verbose : LogEventLevel.Warning, ex, "连接弹幕服务器时出错");
+                    this.logger.Debug("弹幕连接出错 {IsCancellationRequested} {disposed} {delay}", this.ct.IsCancellationRequested, this.disposedValue, delay);
 
                     if (!this.ct.IsCancellationRequested)
                         this.StartDamakuConnection(delay: true);
                 }
             });
+        }
 
         #endregion
 
