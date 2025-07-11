@@ -425,7 +425,7 @@ namespace BililiveRecorder.Core
                             this.logger.Write(ex is ExecutionRejectedException ? LogEventLevel.Verbose : LogEventLevel.Warning, ex, "等待连接弹幕服务器时出错");
                             return;
                         }
-                        this.logger.Debug("弹幕连接等待结束");
+                        this.logger.Debug("弹幕连接前等待结束");
                     }
 
                     // 至少要等到获取到一次房间信息后才能连接弹幕服务器。
@@ -441,6 +441,7 @@ namespace BililiveRecorder.Core
                     }
 
                     await this.danmakuClient.ConnectAsync(this.RoomConfig.RoomId, this.RoomConfig.DanmakuTransport, this.ct).ConfigureAwait(false);
+                    this.logger.Debug("弹幕连接结束");
                 }
                 catch (Exception ex)
                 {
