@@ -13,6 +13,7 @@ using BililiveRecorder.Core.Config;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using Serilog;
+using Serilog.Events;
 using Timer = System.Timers.Timer;
 
 namespace BililiveRecorder.Core.Api.Danmaku
