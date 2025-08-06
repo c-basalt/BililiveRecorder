@@ -75,15 +75,21 @@ namespace BililiveRecorder.Core.Api.Danmaku
             if (!Enum.IsDefined(typeof(DanmakuTransportMode), transportMode))
                 throw new ArgumentOutOfRangeException(nameof(transportMode), transportMode, "Invalid danmaku transport mode.");
 
+            this.logger.Debug("获取弹幕semaphore");
             await this.semaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
+            this.logger.Debug("开始执行弹幕连接");
             try
             {
-                if (this.danmakuTransport != null)
+                if (this.danmakuTransport != null) {
+                    this.logger.Debug("弹幕danmakuTransport已存在");
                     return;
+                }
 
                 var serverInfo = await this.apiClient.GetDanmakuServerAsync(roomId).ConfigureAwait(false);
-                if (serverInfo.Data is null)
+                if (serverInfo.Data is null) {
+                    this.logger.Debug("无弹幕服务器信息");
                     return;
+                }
 
                 var danmakuServerInfo = serverInfo.Data.SelectDanmakuServer(transportMode);
 
@@ -103,6 +109,7 @@ namespace BililiveRecorder.Core.Api.Danmaku
 
                 await this.SendHelloAsync(roomId, this.apiClient.GetUid(), this.apiClient.GetBuvid3(), danmakuServerInfo.Token ?? string.Empty).ConfigureAwait(false);
                 await this.SendPingAsync().ConfigureAwait(false);
+                this.logger.Debug("弹幕完成握手包发送");
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -129,7 +136,10 @@ namespace BililiveRecorder.Core.Api.Danmaku
                     {
                         await this.DisconnectAsync().ConfigureAwait(false);
                     }
-                    catch (Exception) { }
+                    catch (Exception ex)
+                    {
+                        this.logger.Write(LogEventLevel.Warning, ex, "清理弹幕连接时出错");
+                    }
                 }, CancellationToken.None);
             }
             finally
