@@ -76,19 +76,19 @@ namespace BililiveRecorder.Core.Api.Danmaku
             if (!Enum.IsDefined(typeof(DanmakuTransportMode), transportMode))
                 throw new ArgumentOutOfRangeException(nameof(transportMode), transportMode, "Invalid danmaku transport mode.");
 
-            this.logger.Debug("获取弹幕semaphore");
+            this.logger.Debug("获取弹幕semaphore {roomId}", roomId);
             await this.semaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
             this.logger.Debug("开始执行弹幕连接");
             try
             {
                 if (this.danmakuTransport != null) {
-                    this.logger.Debug("弹幕danmakuTransport已存在");
+                    this.logger.Debug("弹幕danmakuTransport已存在 {roomId}", roomId);
                     return;
                 }
 
                 var serverInfo = await this.apiClient.GetDanmakuServerAsync(roomId).ConfigureAwait(false);
                 if (serverInfo.Data is null) {
-                    this.logger.Debug("无弹幕服务器信息");
+                    this.logger.Debug("无弹幕服务器信息 {roomId}", roomId);
                     return;
                 }
 
@@ -110,7 +110,7 @@ namespace BililiveRecorder.Core.Api.Danmaku
 
                 await this.SendHelloAsync(roomId, this.apiClient.GetUid(), this.apiClient.GetBuvid3(), danmakuServerInfo.Token ?? string.Empty).ConfigureAwait(false);
                 await this.SendPingAsync().ConfigureAwait(false);
-                this.logger.Debug("弹幕完成握手包发送");
+                this.logger.Debug("弹幕完成握手包发送 {roomId}", roomId);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -139,7 +139,7 @@ namespace BililiveRecorder.Core.Api.Danmaku
                     }
                     catch (Exception ex)
                     {
-                        this.logger.Write(LogEventLevel.Warning, ex, "清理弹幕连接时出错");
+                        this.logger.Write(LogEventLevel.Warning, ex, "清理弹幕连接时出错 {roomId}", roomId);
                     }
                 }, CancellationToken.None);
             }
