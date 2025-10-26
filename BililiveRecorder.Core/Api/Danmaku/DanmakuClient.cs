@@ -68,7 +68,7 @@ namespace BililiveRecorder.Core.Api.Danmaku
             StatusChanged?.Invoke(this, StatusChangedEventArgs.False);
         }
 
-        public async Task ConnectAsync(int roomId, DanmakuTransportMode transportMode, CancellationToken cancellationToken)
+        public async Task ConnectAsync(int roomId, DanmakuTransportMode transportMode, CancellationToken cancellationToken, bool maybeConnected)
         {
             if (this.disposedValue)
                 throw new ObjectDisposedException(nameof(DanmakuClient));
@@ -82,8 +82,14 @@ namespace BililiveRecorder.Core.Api.Danmaku
             try
             {
                 if (this.danmakuTransport != null) {
-                    this.logger.Debug("弹幕danmakuTransport已存在 {roomId}", roomId);
-                    return;
+                    if (maybeConnected) {
+                        this.logger.Debug("弹幕danmakuTransport已存在 {roomId}", roomId);
+                        return;
+                    } else {
+                        this.logger.Debug("弹幕danmakuTransport已存在但未连接，强制重试连接 {roomId}", roomId);
+                        this.danmakuTransport?.Dispose();
+                        this.danmakuTransport = null;
+                    }
                 }
 
                 var serverInfo = await this.apiClient.GetDanmakuServerAsync(roomId).ConfigureAwait(false);
