@@ -400,7 +400,7 @@ namespace BililiveRecorder.Core
         ///
         private void StartDamakuConnection(bool delay = true)
         {
-            this.logger.Debug("开始弹幕连接 {disposed} {delay}", this.disposedValue, delay);
+            this.logger.Debug("开始弹幕连接 {disposed} {delay} {connected}", this.disposedValue, delay, this.DanmakuConnected);
             _ = Task.Run(async () =>
             {
                 this.logger.Debug("开始弹幕连接任务 {disposed} {delay}", this.disposedValue, delay);
@@ -440,7 +440,7 @@ namespace BililiveRecorder.Core
                         return;
                     }
 
-                    await this.danmakuClient.ConnectAsync(this.RoomConfig.RoomId, this.RoomConfig.DanmakuTransport, this.ct).ConfigureAwait(false);
+                    await this.danmakuClient.ConnectAsync(this.RoomConfig.RoomId, this.RoomConfig.DanmakuTransport, this.ct, this.DanmakuConnected).ConfigureAwait(false);
                     this.logger.Debug("弹幕连接结束");
                 }
                 catch (Exception ex)
